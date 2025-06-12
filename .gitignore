@@ -17,6 +17,7 @@
 mono_crash.*
 
 # Build results
+[Ll]ibrary/
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
@@ -33,6 +34,11 @@ bld/
 [Oo]ut/
 [Ll]og/
 [Ll]ogs/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+MemoryCaptures/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
@@ -391,6 +397,12 @@ FodyWeavers.xsd
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.user
+*.userprefs
 
 # Local History for Visual Studio Code
 .history/
@@ -403,4 +415,41 @@ FodyWeavers.xsd
 *.msp
 
 # JetBrains Rider
+.idea/
 *.sln.iml
+
+# ========== OS 별 시스템 파일 ==========
+.DS_Store
+Thumbs.db
+
+
+# ========== Unity 생성 데이터 ==========
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+
+# ========== Unity Collaborate or Cloud ==========
+.collab/
+.Unity/
+
+# ========== Addressables 및 AssetDB Cache ==========
+/Assets/AddressableAssetsData/*
+!*.asset
+/Assets/StreamingAssets/aa.meta
+/Assets/StreamingAssets/*.bin
+/Assets/StreamingAssets/*.json
+
+# ========== 빌드 플랫폼 폴더 ==========
+*.apk
+*.aab
+*.xcodeproj
+*.xcworkspace
+*.xcuserstate
+*.gradle
+*.idea/
+.gradle/
+build/
+
+crashlytics-build.properties
