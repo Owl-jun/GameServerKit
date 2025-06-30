@@ -15,7 +15,8 @@ public class NetworkManager : MonoBehaviour
     public static NetworkManager Instance;
     [SerializeField] public GameObject playerPrefab;
 
-    private volatile bool isRunning = true;
+    public volatile bool isRunning = false;
+    private volatile bool TCPisRunning = true;
 
     private TcpClient tcpClient;
     private SslStream sslStream;
@@ -49,7 +50,25 @@ public class NetworkManager : MonoBehaviour
         MainThreadDispatcher.Enqueue(() => SpawnMyPlayer(userId));
     }
 
+    long pingSentTime;
+    private float pingInterval = 2f;
+    private float pingTimer = 0f;
 
+    public void SendPing()
+    {
+        pingSentTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        SendTlpMessage(0x09, pingSentTime.ToString());
+    }
+
+    void Update()
+    {
+        pingTimer += Time.deltaTime;
+        if (pingTimer >= pingInterval)
+        {
+            SendPing();
+            pingTimer = 0f;
+        }
+    }
 
     private void SpawnMyPlayer(string userId)
     {
@@ -87,7 +106,7 @@ public class NetworkManager : MonoBehaviour
             Debug.LogError("[NetworkManager] 서버 연결 실패: " + ex.Message);
         }
     }
-    private void ConnectToChatServer(string ip, int port)
+    public void ConnectToChatServer(string ip, int port)
     {
         try
         {
@@ -98,10 +117,13 @@ public class NetworkManager : MonoBehaviour
             chatReceiveThread.IsBackground = true;
             chatReceiveThread.Start();
 
+            isRunning = true;
+
             Debug.Log("[Chat] 채팅 서버 연결 성공 및 수신 시작");
         }
         catch (Exception ex)
         {
+            isRunning = false;
             Debug.LogError("[Chat] 채팅 서버 연결 실패: " + ex.Message);
         }
     }
@@ -154,7 +176,7 @@ public class NetworkManager : MonoBehaviour
 
     private void GameReceiveLoop()
     {
-        while (isRunning)
+        while (TCPisRunning)
         {
             try
             {
@@ -204,6 +226,13 @@ public class NetworkManager : MonoBehaviour
                 break;
             case 4:
                 HandleLogout(body);
+                break;
+            case 9:
+                long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                long sent = long.Parse(body);
+                long ping = now - sent;
+                Debug.Log($"[PING] 왕복시간: {ping} ms");
+                PingOverlay.Instance?.UpdatePing(ping);
                 break;
             default:
                 Debug.LogWarning($"[HandleMessage] 알 수 없는 opcode: {opcode}");
@@ -361,8 +390,6 @@ public class NetworkManager : MonoBehaviour
 
     private void OnApplicationQuit()
     {
-
-        isRunning = false;
         LoginManager.Instance?.SendLogoutBlocking();
         try { sslStream?.Close(); } catch { }
         try { tcpClient?.Close(); } catch { }

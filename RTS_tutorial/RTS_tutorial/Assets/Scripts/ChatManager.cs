@@ -75,6 +75,12 @@ public class ChatManager : MonoBehaviour
 
     void SubmitChat()
     {
+        if (NM.isRunning == false)
+        {
+            DisplayMessage("채팅 서버와의 연결이 끊어졌습니다. 재접속을 시도합니다.");
+            NM.ConnectToChatServer("127.0.0.1", 12345);
+        }
+
         string senderId = PlayerManager.Instance.myPlayerName ?? "Unknown";
         string msg = inputField.text.Trim();
 
@@ -84,8 +90,8 @@ public class ChatManager : MonoBehaviour
         // 본인 메시지도 화면에 출력
         DisplayMessage($"[나] {msg}");
 
-        // 서버 전송
-        NM.SendChatMessage(0x05,$"{senderId} {msg}");
+        if (NM.isRunning == true)
+            NM.SendChatMessage(0x05,$"{senderId} {msg}");
 
         inputField.text = "";
         CloseChatInput();
@@ -93,8 +99,12 @@ public class ChatManager : MonoBehaviour
 
     public void DisplayMessage(string message)
     {
-        if (message.Contains(PlayerManager.Instance.myPlayerName))
+        string myname = PlayerManager.Instance.myPlayerName;
+        if (myname == message.Substring(0,myname.Length))
+        {
+            Debug.Log(message.Substring(0, myname.Length));
             return;
+        }
         var go = Instantiate(messagePrefab, messageParent);
         var textComponent = go.GetComponentInChildren<TMP_Text>();
 
