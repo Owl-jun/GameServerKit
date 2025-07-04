@@ -2,7 +2,6 @@
 Multiplayer Server Architecture : Unity(Client) + REST API + C++ TCP(IOCP)
 
 ---
-진행중 ..
 
 ### Directory
 |폴더|내용|
